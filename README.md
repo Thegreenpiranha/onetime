@@ -2,6 +2,8 @@
 
 End-to-end encrypted one-time sharing. Paste text, get a single-use link, recipient opens it once — the server only ever stores ciphertext.
 
+**Repository:** https://github.com/Thegreenpiranha/onetime
+
 ## How the security works
 
 - The browser generates a random AES-256 key and encrypts the content **locally** (Web Crypto API, AES-GCM).
@@ -29,6 +31,8 @@ That's it. No accounts, no other services to spin up.
 app/
   page.tsx                              # sender view (encrypt → link)
   s/[id]/page.tsx                       # recipient view (decrypt)
+  history/page.tsx                      # local sender history
+  about/page.tsx                        # how it works / FAQ
   api/
     secret/
       route.ts                          # POST   create secret
@@ -37,8 +41,10 @@ app/
         consume/route.ts                # POST   ciphertext + burn
 lib/
   crypto.ts                             # Web Crypto helpers (browser-side)
+  rate-limit.ts                         # in-memory sliding window per IP
+  history.ts                            # localStorage history (browser-side)
   db/
-    client.ts                           # libsql + drizzle
+    client.ts                           # better-sqlite3 + drizzle
     schema.ts                           # secrets table
 drizzle.config.ts
 ```
@@ -57,18 +63,23 @@ npm run db:studio    # GUI at https://local.drizzle.studio
 - Next.js 16 (App Router) — frontend + API in one repo
 - TypeScript
 - Tailwind 4
-- libsql + Drizzle ORM — SQLite locally, swap URL to host on Turso later
+- better-sqlite3 + Drizzle ORM — SQLite locally, swap URL to host on Turso/D1 later
 - Web Crypto API — AES-256-GCM, no third-party crypto libraries
 - nanoid — 12-character secret IDs
 
-## Status
+## What's shipped
 
-MVP. Text only. 1MB cap. Single read, 24h expiry. Files, password layer, accounts, audit log, team features all come later.
+- Text secrets, up to 1 MB ciphertext per send
+- Configurable reads (1 / 3 / 5 / 10) and expiry (5m / 1h / 24h / 7d)
+- Single-use links with server-side burn on consume
+- Per-IP rate limiting on all endpoints (in-memory sliding window)
+- Local sender history (localStorage, no URL/key leakage, never on the server)
+- Distinct mono-aesthetic UI with light/dark via system preference
 
 ## Roadmap
 
-- v1.0 — text only, single read, 24h (this)
-- v1.0.5 — local history (localStorage on sender)
-- v1.1 — file upload, configurable expiry & read count
+- v1.0 — text encryption, one-time reveal ✓
+- v1.0.5 — configurable reads/expiry, local history, rate limiting ✓
+- v1.1 — file upload
 - v1.2 — optional password layer (PBKDF2 + key wrapping)
-- v2.0 — accounts, team features, billing
+- v2.0 — accounts, team features, billing, distributed rate limiter

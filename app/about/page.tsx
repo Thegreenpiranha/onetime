@@ -26,10 +26,10 @@ export default function AboutPage() {
           <p>
             A tool for sharing a piece of sensitive text — a password, an API
             key, a recovery phrase, a private note — with one specific person,
-            exactly once. They open the link, see the message, and the message
-            is destroyed. The server only ever holds encrypted bytes. Even if
-            its database were leaked tomorrow, your secret would still be
-            unreadable.
+            exactly once (or up to ten times, your choice). They open the link,
+            see the message, and the message is destroyed. The server only
+            ever holds encrypted bytes. Even if its database were leaked
+            tomorrow, your secret would still be unreadable.
           </p>
         </div>
       </section>
@@ -65,8 +65,8 @@ export default function AboutPage() {
           <p>
             When the recipient opens the link, the same thing runs in reverse:
             their browser pulls the encrypted blob from the server, extracts
-            the key from the URL fragment, and decrypts locally. Then the
-            server deletes the blob.
+            the key from the URL fragment, and decrypts locally. When the read
+            count is exhausted, the server deletes the blob.
           </p>
         </div>
       </section>
@@ -90,6 +90,16 @@ export default function AboutPage() {
             who has the link can decrypt the message. So treat the link like
             the secret itself — share it through a channel you trust (Signal,
             encrypted email, in person).
+          </p>
+          <p>
+            <span className="text-ink">
+              Your sender history stays in your browser.
+            </span>{" "}
+            The list of links you&apos;ve created lives only in this
+            browser&apos;s localStorage. The server has no record of which
+            secrets were created by whom. And the decryption links themselves
+            are never stored — only the IDs and timestamps — so even you
+            cannot re-open a secret you&apos;ve already sent.
           </p>
           <p>
             <span className="text-ink">You can verify all of this.</span> The
@@ -140,6 +150,20 @@ export default function AboutPage() {
             </dd>
           </div>
           <div>
+            <dt className="text-ink mb-1.5">Can I see what I&apos;ve sent?</dt>
+            <dd className="text-muted">
+              Yes, on the <span className="font-mono">//history</span> page.
+              The list is stored only in your browser. The server has no
+              record of which secrets are yours. We don&apos;t store the
+              decryption links themselves — only metadata (id, when it was
+              created, when it expires, how many reads are left). Once
+              you&apos;ve navigated away from the create page, even you
+              cannot re-open a sent secret. This preserves the one-time
+              promise: if your browser is compromised, your past secrets
+              aren&apos;t exposed through the history.
+            </dd>
+          </div>
+          <div>
             <dt className="text-ink mb-1.5">Can I send files?</dt>
             <dd className="text-muted">Not yet. Text only for now. Files are on the roadmap.</dd>
           </div>
@@ -153,9 +177,26 @@ export default function AboutPage() {
             </dd>
           </div>
           <div>
+            <dt className="text-ink mb-1.5">Are there usage limits?</dt>
+            <dd className="text-muted">
+              Yes — to prevent abuse, there are per-IP rate limits: 20
+              creations, 120 metadata reads, and 60 reveals per minute.
+              Normal use will never hit these.
+            </dd>
+          </div>
+          <div>
             <dt className="text-ink mb-1.5">Is the source open?</dt>
             <dd className="text-muted">
-              Yes. Link coming when the repo goes public.
+              Yes —{" "}
+              <a
+                href="https://github.com/Thegreenpiranha/onetime"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink underline underline-offset-2 hover:text-burn transition-colors"
+              >
+                github.com/Thegreenpiranha/onetime
+              </a>
+              .
             </dd>
           </div>
         </dl>
@@ -178,6 +219,17 @@ export default function AboutPage() {
           <p>
             Storage: a single SQLite table holds the ciphertext, IV, expiry,
             and read counter. Rows are deleted on read or expiry.
+          </p>
+          <p>
+            Rate limiting: in-memory sliding window, per-IP. Defaults are 20
+            creates / 120 metadata reads / 60 reveals per minute. Tunable in{" "}
+            <span className="font-mono">lib/rate-limit.ts</span>.
+          </p>
+          <p>
+            History: client-side only,{" "}
+            <span className="font-mono">localStorage</span> key{" "}
+            <span className="font-mono">onetime:history:v1</span>. The server
+            has no equivalent record.
           </p>
         </div>
       </section>
