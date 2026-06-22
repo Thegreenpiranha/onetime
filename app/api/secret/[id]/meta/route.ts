@@ -2,15 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { secrets } from "@/lib/db/schema";
+import {
+  checkRateLimit,
+  getClientId,
+  rateLimitResponse,
+  LIMITS,
+} from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 // Returns metadata without consuming a read. Lets the recipient
 // see what they're about to open before committing.
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Rate limit: protects against ID enumeration.
+  const clientId = getClientId(req);
+  const rl = checkRateLimit(
+    `meta:${clientId}`,
+    LIMITS.meta.limit,
+    LIMITS.meta.windowMs,
+  );
+  if (!rl.ok) return rateLimitResponse(rl);
+
   const { id } = await params;
 
   const rows = await db

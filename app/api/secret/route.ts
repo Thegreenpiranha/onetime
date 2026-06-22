@@ -3,6 +3,12 @@ import { nanoid } from "nanoid";
 import { db } from "@/lib/db/client";
 import { secrets } from "@/lib/db/schema";
 import { base64urlDecode } from "@/lib/crypto";
+import {
+  checkRateLimit,
+  getClientId,
+  rateLimitResponse,
+  LIMITS,
+} from "@/lib/rate-limit";
 
 // Force the node runtime — libsql client uses node APIs, not edge.
 export const runtime = "nodejs";
@@ -12,6 +18,15 @@ const MAX_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 const DEFAULT_TTL_SECONDS = 24 * 60 * 60; // 1 day
 
 export async function POST(req: NextRequest) {
+  // Rate limit: protects against creation spam / storage exhaustion.
+  const clientId = getClientId(req);
+  const rl = checkRateLimit(
+    `create:${clientId}`,
+    LIMITS.create.limit,
+    LIMITS.create.windowMs,
+  );
+  if (!rl.ok) return rateLimitResponse(rl);
+
   let body: unknown;
   try {
     body = await req.json();

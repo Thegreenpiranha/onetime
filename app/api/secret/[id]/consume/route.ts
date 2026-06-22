@@ -3,15 +3,30 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { secrets } from "@/lib/db/schema";
 import { base64urlEncode } from "@/lib/crypto";
+import {
+  checkRateLimit,
+  getClientId,
+  rateLimitResponse,
+  LIMITS,
+} from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 // POST not GET, deliberately: GETs get prefetched by browsers, link previewers,
 // antivirus scanners. We don't want a Slack preview to burn the link.
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Rate limit: protects against rapid-fire consume attempts across many IDs.
+  const clientId = getClientId(req);
+  const rl = checkRateLimit(
+    `consume:${clientId}`,
+    LIMITS.consume.limit,
+    LIMITS.consume.windowMs,
+  );
+  if (!rl.ok) return rateLimitResponse(rl);
+
   const { id } = await params;
   const now = Math.floor(Date.now() / 1000);
 
