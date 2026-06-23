@@ -24,10 +24,11 @@ export default function AboutPage() {
         </h2>
         <div className="text-sm leading-relaxed space-y-4 max-w-prose">
           <p>
-            A tool for sharing a piece of sensitive text — a password, an API
-            key, a recovery phrase, a private note — with one specific person,
-            exactly once (or up to ten times, your choice). They open the link,
-            see the message, and the message is destroyed. The server only
+            A tool for sharing a piece of sensitive text or a small file — a
+            password, an API key, a recovery phrase, a private note, a
+            screenshot — with one specific person, exactly once (or up to ten
+            times, your choice). They open the link, see the message or
+            download the file, and the content is destroyed. The server only
             ever holds encrypted bytes. Even if its database were leaked
             tomorrow, your secret would still be unreadable.
           </p>
@@ -165,7 +166,12 @@ export default function AboutPage() {
           </div>
           <div>
             <dt className="text-ink mb-1.5">Can I send files?</dt>
-            <dd className="text-muted">Not yet. Text only for now. Files are on the roadmap.</dd>
+            <dd className="text-muted">
+              Yes, up to 4 MB per file. Drag-and-drop or click to pick. The
+              file is encrypted in your browser before upload — the server
+              only ever sees ciphertext, exactly like with text. The recipient
+              gets a download dialog when they open the link.
+            </dd>
           </div>
           <div>
             <dt className="text-ink mb-1.5">
@@ -174,6 +180,19 @@ export default function AboutPage() {
             <dd className="text-muted">
               Yes — passwords are the most common use case. The same crypto
               that protects your bank login protects this.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink mb-1.5">
+              Can you prevent screenshots?
+            </dt>
+            <dd className="text-muted">
+              No. Once a secret is revealed in a browser, the recipient owns
+              the content — screenshots, screen recordings, phone cameras
+              pointed at the screen, all out of our reach. Any web tool that
+              claims to prevent this is misleading. What we do protect: the
+              secret in transit, the secret at rest on the server, and the
+              ability to re-open the link after it&apos;s been read.
             </dd>
           </div>
           <div>
@@ -219,6 +238,11 @@ export default function AboutPage() {
           <p>
             Storage: a single SQLite table holds the ciphertext, IV, expiry,
             and read counter. Rows are deleted on read or expiry.
+          </p>
+          <p>
+            Limits: 4 MB plaintext per file (5 MB ciphertext on the wire).
+            Larger files will need direct-to-storage uploads, which is a
+            future change.
           </p>
           <p>
             Rate limiting: in-memory sliding window, per-IP. Defaults are 20

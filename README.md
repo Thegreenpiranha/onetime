@@ -1,6 +1,6 @@
 # onetime
 
-End-to-end encrypted one-time sharing. Paste text, get a single-use link, recipient opens it once — the server only ever stores ciphertext.
+End-to-end encrypted one-time sharing. Paste text or drop a file, get a single-use link, recipient opens it once — the server only ever stores ciphertext.
 
 **Repository:** https://github.com/Thegreenpiranha/onetime
 
@@ -69,7 +69,7 @@ npm run db:studio    # GUI at https://local.drizzle.studio
 
 ## What's shipped
 
-- Text secrets, up to 1 MB ciphertext per send
+- Text and file secrets (up to 4 MB per file, drag-and-drop in the browser)
 - Configurable reads (1 / 3 / 5 / 10) and expiry (5m / 1h / 24h / 7d)
 - Single-use links with server-side burn on consume
 - Per-IP rate limiting on all endpoints (in-memory sliding window)
@@ -80,6 +80,6 @@ npm run db:studio    # GUI at https://local.drizzle.studio
 
 - v1.0 — text encryption, one-time reveal ✓
 - v1.0.5 — configurable reads/expiry, local history, rate limiting ✓
-- v1.1 — file upload
+- v1.1 — file upload ✓
 - v1.2 — optional password layer (PBKDF2 + key wrapping)
 - v2.0 — accounts, team features, billing, distributed rate limiter
